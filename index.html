@@ -161,7 +161,7 @@
 <!-- Game Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Data for the game: list of exercises and their corresponding health benefits
+        // Data for the game
         var exercises = [
             { name: 'Yoga', benefit: 'Improves Flexibility' },
             { name: 'Running', benefit: 'Enhances Cardiovascular Health' },
@@ -175,7 +175,7 @@
             { name: 'Stretching', benefit: 'Reduces Muscle Tension' }
         ];
 
-        // Shuffle function to randomize the order of items
+        // Shuffle function
         function shuffle(array) {
             var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -219,8 +219,8 @@
                 exerciseItem.addEventListener('dragstart', dragStart);
                 exerciseItem.addEventListener('dragend', dragEnd);
                 // Touch events
-                exerciseItem.addEventListener('touchstart', touchStart);
-                exerciseItem.addEventListener('touchmove', touchMove);
+                exerciseItem.addEventListener('touchstart', touchStart, { passive: false });
+                exerciseItem.addEventListener('touchmove', touchMove, { passive: false });
                 exerciseItem.addEventListener('touchend', touchEnd);
 
                 exercisesColumn.appendChild(exerciseItem);
@@ -245,17 +245,16 @@
             resetButton.addEventListener('click', resetGame);
         }
 
-        // Variables to hold the dragged item
-        var draggedExercise = null;
+        // Variables for touch dragging
         var touchDragItem = null;
-        var initialX = 0;
-        var initialY = 0;
-        var currentX = 0;
-        var currentY = 0;
-        var xOffset = 0;
-        var yOffset = 0;
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchItemStartX = 0;
+        var touchItemStartY = 0;
 
         // Drag and drop event handlers for mouse
+        var draggedExercise = null;
+
         function dragStart(event) {
             draggedExercise = this;
             event.dataTransfer.setData('text/plain', '');
@@ -288,45 +287,50 @@
 
         // Touch event handlers for mobile devices
         function touchStart(event) {
+            event.preventDefault();
             touchDragItem = this;
             touchDragItem.classList.add('dragging');
 
-            initialX = event.touches[0].clientX - xOffset;
-            initialY = event.touches[0].clientY - yOffset;
+            var touch = event.touches[0];
 
-            // Append to body to allow dragging over other elements
-            document.body.appendChild(touchDragItem);
+            // Get initial touch coordinates
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+
+            // Get the item's initial position
+            var rect = touchDragItem.getBoundingClientRect();
+            touchItemStartX = rect.left;
+            touchItemStartY = rect.top;
+
+            // Set position to fixed to allow moving
             touchDragItem.style.position = 'fixed';
             touchDragItem.style.zIndex = '1000';
-            touchDragItem.style.left = '0px';
-            touchDragItem.style.top = '0px';
-            moveItem(xOffset, yOffset);
+            touchDragItem.style.left = touchItemStartX + 'px';
+            touchDragItem.style.top = touchItemStartY + 'px';
         }
 
         function touchMove(event) {
             event.preventDefault();
 
-            currentX = event.touches[0].clientX - initialX;
-            currentY = event.touches[0].clientY - initialY;
+            var touch = event.touches[0];
+            var deltaX = touch.clientX - touchStartX;
+            var deltaY = touch.clientY - touchStartY;
 
-            xOffset = currentX;
-            yOffset = currentY;
+            var newX = touchItemStartX + deltaX;
+            var newY = touchItemStartY + deltaY;
 
-            moveItem(currentX, currentY);
-        }
-
-        function moveItem(x, y) {
-            touchDragItem.style.transform = `translate(${x}px, ${y}px)`;
+            touchDragItem.style.left = newX + 'px';
+            touchDragItem.style.top = newY + 'px';
         }
 
         function touchEnd(event) {
+            event.preventDefault();
+
             touchDragItem.classList.remove('dragging');
             touchDragItem.style.position = '';
             touchDragItem.style.zIndex = '';
-            touchDragItem.style.transform = '';
             touchDragItem.style.left = '';
             touchDragItem.style.top = '';
-            xOffset = yOffset = currentX = currentY = 0;
 
             // Get the element under the touch point
             var touch = event.changedTouches[0];
