@@ -37,6 +37,7 @@
             box-sizing: border-box;
             background-color: #ecf0f1;
             border-radius: 5px;
+            position: relative;
         }
         .column h3 {
             text-align: center;
@@ -51,6 +52,8 @@
             border-radius: 5px;
             cursor: grab;
             font-size: 16px;
+            position: relative;
+            touch-action: none; /* Prevent default touch behaviors */
         }
         .droppable-item {
             background-color: #fff;
@@ -64,6 +67,7 @@
             align-items: center;
             justify-content: center;
             font-size: 16px;
+            position: relative;
         }
         .droppable-item.correct {
             border-color: #27ae60;
@@ -96,8 +100,8 @@
             color: #27ae60;
             margin-top: 20px;
         }
-        .invisible {
-            visibility: hidden;
+        .dragging {
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -196,9 +200,9 @@
                 exerciseItem.addEventListener('dragend', dragEnd);
 
                 // Touch events for mobile devices
-                exerciseItem.addEventListener('touchstart', touchStart, { passive: true });
+                exerciseItem.addEventListener('touchstart', touchStart, { passive: false });
+                exerciseItem.addEventListener('touchmove', touchMove, { passive: false });
                 exerciseItem.addEventListener('touchend', touchEnd);
-                exerciseItem.addEventListener('touchmove', touchMove);
 
                 exercisesColumn.appendChild(exerciseItem);
             });
@@ -213,11 +217,6 @@
                 benefitItem.addEventListener('dragover', dragOver);
                 benefitItem.addEventListener('drop', drop);
 
-                // Touch events for mobile devices
-                benefitItem.addEventListener('touchstart', touchDropStart);
-                benefitItem.addEventListener('touchend', touchDropEnd);
-                benefitItem.addEventListener('touchmove', touchDropMove);
-
                 benefitsColumn.appendChild(benefitItem);
             });
 
@@ -228,19 +227,16 @@
 
         // Variables to hold the dragged item
         var draggedExercise = null;
-        var touchDragItem = null;
-        var initialTouchX = 0;
-        var initialTouchY = 0;
 
         // Drag and drop event handlers for mouse
         function dragStart(event) {
             draggedExercise = this;
             event.dataTransfer.setData('text/plain', '');
-            setTimeout(() => this.classList.add('invisible'), 0);
+            setTimeout(() => this.classList.add('dragging'), 0);
         }
 
         function dragEnd(event) {
-            this.classList.remove('invisible');
+            this.classList.remove('dragging');
         }
 
         function dragOver(event) {
@@ -256,50 +252,63 @@
         }
 
         // Touch event handlers for mobile devices
+        var touchDragItem = null;
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var offsetX = 0;
+        var offsetY = 0;
+
         function touchStart(event) {
+            event.preventDefault();
             touchDragItem = this;
             touchDragItem.classList.add('dragging');
-            initialTouchX = event.touches[0].clientX;
-            initialTouchY = event.touches[0].clientY;
+
+            var touch = event.touches[0];
+
+            // Get the position of the touch relative to the item
+            var rect = touchDragItem.getBoundingClientRect();
+            offsetX = touch.clientX - rect.left;
+            offsetY = touch.clientY - rect.top;
+
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+
+            touchDragItem.style.position = 'fixed';
+            touchDragItem.style.zIndex = '1000';
         }
 
         function touchMove(event) {
             event.preventDefault();
-            var touchLocation = event.touches[0];
-            touchDragItem.style.position = 'absolute';
-            touchDragItem.style.zIndex = '1000';
-            touchDragItem.style.left = (touchLocation.clientX - initialTouchX) + 'px';
-            touchDragItem.style.top = (touchLocation.clientY - initialTouchY) + 'px';
+            if (!touchDragItem) return;
+            var touch = event.touches[0];
+            var moveX = touch.clientX - offsetX;
+            var moveY = touch.clientY - offsetY;
+
+            touchDragItem.style.left = moveX + 'px';
+            touchDragItem.style.top = moveY + 'px';
         }
 
         function touchEnd(event) {
-            touchDragItem.classList.remove('dragging');
-            touchDragItem.style.position = 'static';
+            event.preventDefault();
+            if (!touchDragItem) return;
+
+            // Find the element under the touch point
+            var touch = event.changedTouches[0];
+            var elem = document.elementFromPoint(touch.clientX, touch.clientY);
+
+            // Reset the item's style
+            touchDragItem.style.position = 'relative';
             touchDragItem.style.left = '';
             touchDragItem.style.top = '';
             touchDragItem.style.zIndex = '';
-
-            // Find the element under the touch point
-            var changedTouch = event.changedTouches[0];
-            var elem = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+            touchDragItem.classList.remove('dragging');
 
             if (elem && elem.classList.contains('droppable-item') && !elem.querySelector('.draggable-item')) {
                 elem.appendChild(touchDragItem);
                 elem.dataset.exercise = touchDragItem.dataset.exercise;
             }
+
             touchDragItem = null;
-        }
-
-        function touchDropStart(event) {
-            event.preventDefault();
-        }
-
-        function touchDropMove(event) {
-            event.preventDefault();
-        }
-
-        function touchDropEnd(event) {
-            event.preventDefault();
         }
 
         // Check the user's answers
