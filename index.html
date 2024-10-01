@@ -64,6 +64,27 @@
             margin-bottom: 20px;
             font-size: 1.5em;
         }
+        .draggable-item, .benefit-token, .droppable-slot {
+    width: 200px; /* Set the desired width */
+    height: 50px;  /* Set the desired height */
+    padding: 0;    /* Remove padding to maintain uniformity */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1em;
+    text-align: center;
+    border-radius: 8px;
+}
+
+/* Adjust grid layout to ensure it accommodates the tile size */
+.left-column {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.right-column {
+    gap: 20px; /* Reduce gap if necessary to fit the new tile size */
+}
 
         .draggable-item {
             background-color: #3498db;
