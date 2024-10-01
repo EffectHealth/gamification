@@ -64,10 +64,51 @@
             margin-bottom: 20px;
             font-size: 1.5em;
         }
-        .draggable-item, .benefit-token, .droppable-slot {
-    width: 200px; /* Set the desired width */
-    height: 50px;  /* Set the desired height */
-    padding: 0;    /* Remove padding to maintain uniformity */
+/* Game Area Styles */
+#game-area {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+/* Left Column: Exercises */
+.left-column {
+    width: 45%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns of exercises */
+    gap: 20px;
+}
+
+.left-column h3 {
+    grid-column: span 2;
+    text-align: center;
+    color: #16a085;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+/* Right Column: Health Benefits with Slots */
+.right-column {
+    width: 45%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns of health benefits */
+    gap: 20px;
+}
+
+.right-column h3 {
+    grid-column: span 2;
+    text-align: center;
+    color: #16a085;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+/* Draggable and Droppable Items */
+.draggable-item, .benefit-token, .droppable-slot {
+    width: 100%; /* Ensure they take the full column width */
+    height: 50px;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -76,7 +117,6 @@
     text-align: center;
     border-radius: 8px;
 }
-
 /* Adjust grid layout to ensure it accommodates the tile size */
 .left-column {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
