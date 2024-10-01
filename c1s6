@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Physical Health Matching Game</title>
+    <style>
+        /* Styles for the matching game */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        #matching-game-container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        p {
+            text-align: center;
+            color: #34495e;
+        }
+        #game-area {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .column {
+            width: 45%;
+            min-height: 400px;
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        .column h3 {
+            text-align: center;
+            color: #16a085;
+        }
+        .draggable-item {
+            background-color: #3498db;
+            color: #fff;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #2980b9;
+            border-radius: 5px;
+            cursor: grab;
+            font-size: 16px;
+        }
+        .droppable-item {
+            background-color: #fff;
+            color: #2c3e50;
+            margin: 10px;
+            padding: 10px;
+            border: 2px dashed #95a5a6;
+            border-radius: 5px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .droppable-item.correct {
+            border-color: #27ae60;
+            background-color: #2ecc71;
+            color: #fff;
+        }
+        .droppable-item.incorrect {
+            border-color: #e74c3c;
+            background-color: #e74c3c;
+            color: #fff;
+        }
+        #check-answers-button, #reset-button {
+            display: block;
+            margin: 30px auto 10px auto;
+            padding: 12px 25px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #2980b9;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #reset-button {
+            background-color: #7f8c8d;
+        }
+        #result-message {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-top: 20px;
+        }
+        .invisible {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div id="matching-game-container">
+    <!-- Game Title -->
+    <h2>Physical Health Matching Game</h2>
+
+    <!-- Instructions -->
+    <p>Match each exercise with its primary health benefit by dragging the exercise to the matching benefit.</p>
+
+    <!-- Game Area -->
+    <div id="game-area">
+        <!-- Exercises Column -->
+        <div id="exercises-column" class="column">
+            <h3>Exercises</h3>
+            <!-- Exercise items will be added here -->
+        </div>
+
+        <!-- Benefits Column -->
+        <div id="benefits-column" class="column">
+            <h3>Health Benefits</h3>
+            <!-- Benefit items will be added here -->
+        </div>
+    </div>
+
+    <!-- Check Answer Button -->
+    <button id="check-answers-button">Check Answers</button>
+
+    <!-- Reset Button -->
+    <button id="reset-button">Reset Game</button>
+
+    <!-- Result Message -->
+    <div id="result-message"></div>
+</div>
+
+<!-- Game Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data for the game: list of exercises and their corresponding health benefits
+        var exercises = [
+            { name: 'Yoga', benefit: 'Improves Flexibility' },
+            { name: 'Running', benefit: 'Enhances Cardiovascular Health' },
+            { name: 'Weight Lifting', benefit: 'Increases Muscle Strength' },
+            { name: 'Swimming', benefit: 'Provides Full-Body Workout' },
+            { name: 'Cycling', benefit: 'Boosts Endurance' },
+            { name: 'Pilates', benefit: 'Strengthens Core Muscles' },
+            { name: 'Tai Chi', benefit: 'Enhances Balance and Coordination' },
+            { name: 'HIIT', benefit: 'Burns Calories Efficiently' },
+            { name: 'Walking', benefit: 'Promotes Joint Health' },
+            { name: 'Stretching', benefit: 'Reduces Muscle Tension' }
+        ];
+
+        // Shuffle function to randomize the order of items
+        function shuffle(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+            return array;
+        }
+
+        // Initialize the game
+        function initGame() {
+            var exercisesColumn = document.getElementById('exercises-column');
+            var benefitsColumn = document.getElementById('benefits-column');
+            var checkAnswersButton = document.getElementById('check-answers-button');
+            var resetButton = document.getElementById('reset-button');
+            var resultMessage = document.getElementById('result-message');
+
+            // Clear previous content
+            exercisesColumn.innerHTML = '<h3>Exercises</h3>';
+            benefitsColumn.innerHTML = '<h3>Health Benefits</h3>';
+            resultMessage.textContent = '';
+            resultMessage.style.color = '#27ae60';
+            checkAnswersButton.disabled = false;
+
+            // Shuffle exercises and benefits
+            var shuffledExercises = shuffle(exercises.slice());
+            var shuffledBenefits = shuffle(exercises.map(function(ex) { return ex.benefit; }));
+
+            // Create draggable exercise items
+            shuffledExercises.forEach(function(exercise) {
+                var exerciseItem = document.createElement('div');
+                exerciseItem.textContent = exercise.name;
+                exerciseItem.className = 'draggable-item';
+                exerciseItem.draggable = true;
+                exerciseItem.dataset.exercise = exercise.name;
+                exerciseItem.addEventListener('dragstart', dragStart);
+                exerciseItem.addEventListener('dragend', dragEnd);
+                exercisesColumn.appendChild(exerciseItem);
+            });
+
+            // Create droppable benefit items
+            shuffledBenefits.forEach(function(benefit) {
+                var benefitItem = document.createElement('div');
+                benefitItem.textContent = benefit;
+                benefitItem.className = 'droppable-item';
+                benefitItem.dataset.benefit = benefit;
+                benefitItem.dataset.exercise = ''; // To store the dropped exercise
+                benefitItem.addEventListener('dragover', dragOver);
+                benefitItem.addEventListener('drop', drop);
+                benefitsColumn.appendChild(benefitItem);
+            });
+
+            // Event listeners for buttons
+            checkAnswersButton.addEventListener('click', checkAnswers);
+            resetButton.addEventListener('click', resetGame);
+        }
+
+        // Variables to hold the dragged item
+        var draggedExercise = null;
+
+        // Drag and drop event handlers
+        function dragStart(event) {
+            draggedExercise = this;
+            event.dataTransfer.setData('text/plain', '');
+            setTimeout(() => this.classList.add('invisible'), 0);
+        }
+
+        function dragEnd(event) {
+            this.classList.remove('invisible');
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            if (!this.querySelector('.draggable-item')) {
+                this.appendChild(draggedExercise);
+                this.dataset.exercise = draggedExercise.dataset.exercise;
+            }
+        }
+
+        // Check the user's answers
+        function checkAnswers() {
+            var benefitItems = document.querySelectorAll('.droppable-item');
+            var correctCount = 0;
+            var totalCount = benefitItems.length;
+
+            benefitItems.forEach(function(item) {
+                var benefit = item.dataset.benefit;
+                var exercise = item.dataset.exercise;
+                var isCorrect = exercises.some(function(ex) {
+                    return ex.name === exercise && ex.benefit === benefit;
+                });
+
+                if (isCorrect) {
+                    item.classList.add('correct');
+                    correctCount++;
+                } else {
+                    item.classList.add('incorrect');
+                }
+            });
+
+            var resultMessage = document.getElementById('result-message');
+            if (correctCount === totalCount) {
+                resultMessage.textContent = 'Excellent! You matched all exercises correctly.';
+            } else {
+                resultMessage.textContent = 'You matched ' + correctCount + ' out of ' + totalCount + ' correctly.';
+                resultMessage.style.color = '#e74c3c';
+            }
+
+            // Disable further interaction
+            var exerciseItems = document.querySelectorAll('.draggable-item');
+            exerciseItems.forEach(function(item) {
+                item.draggable = false;
+            });
+            document.getElementById('check-answers-button').disabled = true;
+        }
+
+        // Reset the game
+        function resetGame() {
+            initGame();
+        }
+
+        // Start the game after the DOM is loaded
+        initGame();
+
+    }); // End of DOMContentLoaded event listener
+</script>
+
+</body>
+</html>
