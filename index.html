@@ -194,6 +194,12 @@
                 exerciseItem.dataset.exercise = exercise.name;
                 exerciseItem.addEventListener('dragstart', dragStart);
                 exerciseItem.addEventListener('dragend', dragEnd);
+
+                // Touch events for mobile devices
+                exerciseItem.addEventListener('touchstart', touchStart, { passive: true });
+                exerciseItem.addEventListener('touchend', touchEnd);
+                exerciseItem.addEventListener('touchmove', touchMove);
+
                 exercisesColumn.appendChild(exerciseItem);
             });
 
@@ -206,6 +212,12 @@
                 benefitItem.dataset.exercise = ''; // To store the dropped exercise
                 benefitItem.addEventListener('dragover', dragOver);
                 benefitItem.addEventListener('drop', drop);
+
+                // Touch events for mobile devices
+                benefitItem.addEventListener('touchstart', touchDropStart);
+                benefitItem.addEventListener('touchend', touchDropEnd);
+                benefitItem.addEventListener('touchmove', touchDropMove);
+
                 benefitsColumn.appendChild(benefitItem);
             });
 
@@ -216,8 +228,11 @@
 
         // Variables to hold the dragged item
         var draggedExercise = null;
+        var touchDragItem = null;
+        var initialTouchX = 0;
+        var initialTouchY = 0;
 
-        // Drag and drop event handlers
+        // Drag and drop event handlers for mouse
         function dragStart(event) {
             draggedExercise = this;
             event.dataTransfer.setData('text/plain', '');
@@ -238,6 +253,53 @@
                 this.appendChild(draggedExercise);
                 this.dataset.exercise = draggedExercise.dataset.exercise;
             }
+        }
+
+        // Touch event handlers for mobile devices
+        function touchStart(event) {
+            touchDragItem = this;
+            touchDragItem.classList.add('dragging');
+            initialTouchX = event.touches[0].clientX;
+            initialTouchY = event.touches[0].clientY;
+        }
+
+        function touchMove(event) {
+            event.preventDefault();
+            var touchLocation = event.touches[0];
+            touchDragItem.style.position = 'absolute';
+            touchDragItem.style.zIndex = '1000';
+            touchDragItem.style.left = (touchLocation.clientX - initialTouchX) + 'px';
+            touchDragItem.style.top = (touchLocation.clientY - initialTouchY) + 'px';
+        }
+
+        function touchEnd(event) {
+            touchDragItem.classList.remove('dragging');
+            touchDragItem.style.position = 'static';
+            touchDragItem.style.left = '';
+            touchDragItem.style.top = '';
+            touchDragItem.style.zIndex = '';
+
+            // Find the element under the touch point
+            var changedTouch = event.changedTouches[0];
+            var elem = document.elementFromPoint(changedTouch.clientX, changedTouch.clientY);
+
+            if (elem && elem.classList.contains('droppable-item') && !elem.querySelector('.draggable-item')) {
+                elem.appendChild(touchDragItem);
+                elem.dataset.exercise = touchDragItem.dataset.exercise;
+            }
+            touchDragItem = null;
+        }
+
+        function touchDropStart(event) {
+            event.preventDefault();
+        }
+
+        function touchDropMove(event) {
+            event.preventDefault();
+        }
+
+        function touchDropEnd(event) {
+            event.preventDefault();
         }
 
         // Check the user's answers
@@ -273,6 +335,9 @@
             var exerciseItems = document.querySelectorAll('.draggable-item');
             exerciseItems.forEach(function(item) {
                 item.draggable = false;
+                item.removeEventListener('touchstart', touchStart);
+                item.removeEventListener('touchmove', touchMove);
+                item.removeEventListener('touchend', touchEnd);
             });
             document.getElementById('check-answers-button').disabled = true;
         }
