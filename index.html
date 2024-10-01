@@ -52,8 +52,9 @@
             border-radius: 5px;
             cursor: grab;
             font-size: 16px;
+            user-select: none;
+            touch-action: none;
             position: relative;
-            touch-action: none; /* Prevent default touch behaviors */
         }
         .droppable-item {
             background-color: #fff;
@@ -68,6 +69,7 @@
             justify-content: center;
             font-size: 16px;
             position: relative;
+            user-select: none;
         }
         .droppable-item.correct {
             border-color: #27ae60;
@@ -196,12 +198,12 @@
                 exerciseItem.className = 'draggable-item';
                 exerciseItem.draggable = true;
                 exerciseItem.dataset.exercise = exercise.name;
+                // Mouse events
                 exerciseItem.addEventListener('dragstart', dragStart);
                 exerciseItem.addEventListener('dragend', dragEnd);
-
-                // Touch events for mobile devices
-                exerciseItem.addEventListener('touchstart', touchStart, { passive: false });
-                exerciseItem.addEventListener('touchmove', touchMove, { passive: false });
+                // Touch events
+                exerciseItem.addEventListener('touchstart', touchStart);
+                exerciseItem.addEventListener('touchmove', touchMove);
                 exerciseItem.addEventListener('touchend', touchEnd);
 
                 exercisesColumn.appendChild(exerciseItem);
@@ -214,8 +216,13 @@
                 benefitItem.className = 'droppable-item';
                 benefitItem.dataset.benefit = benefit;
                 benefitItem.dataset.exercise = ''; // To store the dropped exercise
+                // Mouse events
                 benefitItem.addEventListener('dragover', dragOver);
                 benefitItem.addEventListener('drop', drop);
+                // Touch events
+                benefitItem.addEventListener('touchstart', function(e) { e.preventDefault(); });
+                benefitItem.addEventListener('touchmove', function(e) { e.preventDefault(); });
+                benefitItem.addEventListener('touchend', function(e) { e.preventDefault(); });
 
                 benefitsColumn.appendChild(benefitItem);
             });
@@ -227,6 +234,13 @@
 
         // Variables to hold the dragged item
         var draggedExercise = null;
+        var touchDragItem = null;
+        var initialX = 0;
+        var initialY = 0;
+        var currentX = 0;
+        var currentY = 0;
+        var xOffset = 0;
+        var yOffset = 0;
 
         // Drag and drop event handlers for mouse
         function dragStart(event) {
@@ -245,69 +259,85 @@
 
         function drop(event) {
             event.preventDefault();
-            if (!this.querySelector('.draggable-item')) {
+            if (draggedExercise) {
+                // Allow swapping
+                var existingItem = this.querySelector('.draggable-item');
+                if (existingItem) {
+                    // Move existing item back to the exercises column
+                    var exercisesColumn = document.getElementById('exercises-column');
+                    exercisesColumn.appendChild(existingItem);
+                }
                 this.appendChild(draggedExercise);
                 this.dataset.exercise = draggedExercise.dataset.exercise;
+                draggedExercise = null;
             }
         }
 
         // Touch event handlers for mobile devices
-        var touchDragItem = null;
-        var touchStartX = 0;
-        var touchStartY = 0;
-        var offsetX = 0;
-        var offsetY = 0;
-
         function touchStart(event) {
-            event.preventDefault();
             touchDragItem = this;
             touchDragItem.classList.add('dragging');
 
-            var touch = event.touches[0];
+            initialX = event.touches[0].clientX - xOffset;
+            initialY = event.touches[0].clientY - yOffset;
 
-            // Get the position of the touch relative to the item
-            var rect = touchDragItem.getBoundingClientRect();
-            offsetX = touch.clientX - rect.left;
-            offsetY = touch.clientY - rect.top;
-
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-
+            document.body.appendChild(touchDragItem);
             touchDragItem.style.position = 'fixed';
             touchDragItem.style.zIndex = '1000';
+            moveItem(initialX, initialY);
         }
 
         function touchMove(event) {
             event.preventDefault();
-            if (!touchDragItem) return;
-            var touch = event.touches[0];
-            var moveX = touch.clientX - offsetX;
-            var moveY = touch.clientY - offsetY;
 
-            touchDragItem.style.left = moveX + 'px';
-            touchDragItem.style.top = moveY + 'px';
+            currentX = event.touches[0].clientX - initialX;
+            currentY = event.touches[0].clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            moveItem(currentX, currentY);
+        }
+
+        function moveItem(x, y) {
+            touchDragItem.style.transform = `translate(${x}px, ${y}px)`;
         }
 
         function touchEnd(event) {
-            event.preventDefault();
-            if (!touchDragItem) return;
+            touchDragItem.classList.remove('dragging');
+            touchDragItem.style.position = '';
+            touchDragItem.style.zIndex = '';
+            touchDragItem.style.transform = '';
+            xOffset = yOffset = currentX = currentY = 0;
 
-            // Find the element under the touch point
+            // Get the element under the touch point
             var touch = event.changedTouches[0];
             var elem = document.elementFromPoint(touch.clientX, touch.clientY);
 
-            // Reset the item's style
-            touchDragItem.style.position = 'relative';
-            touchDragItem.style.left = '';
-            touchDragItem.style.top = '';
-            touchDragItem.style.zIndex = '';
-            touchDragItem.classList.remove('dragging');
-
-            if (elem && elem.classList.contains('droppable-item') && !elem.querySelector('.draggable-item')) {
-                elem.appendChild(touchDragItem);
-                elem.dataset.exercise = touchDragItem.dataset.exercise;
+            if (elem) {
+                if (elem.classList.contains('droppable-item')) {
+                    // Allow swapping
+                    var existingItem = elem.querySelector('.draggable-item');
+                    if (existingItem) {
+                        var exercisesColumn = document.getElementById('exercises-column');
+                        exercisesColumn.appendChild(existingItem);
+                    }
+                    elem.appendChild(touchDragItem);
+                    elem.dataset.exercise = touchDragItem.dataset.exercise;
+                } else if (elem.id === 'exercises-column' || elem.parentElement.id === 'exercises-column') {
+                    // Return to exercises column
+                    var exercisesColumn = document.getElementById('exercises-column');
+                    exercisesColumn.appendChild(touchDragItem);
+                } else {
+                    // Return to original position
+                    var exercisesColumn = document.getElementById('exercises-column');
+                    exercisesColumn.appendChild(touchDragItem);
+                }
+            } else {
+                // Return to original position
+                var exercisesColumn = document.getElementById('exercises-column');
+                exercisesColumn.appendChild(touchDragItem);
             }
-
             touchDragItem = null;
         }
 
