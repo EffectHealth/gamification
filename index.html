@@ -12,7 +12,7 @@
             padding: 20px;
         }
         #matching-game-container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: auto;
             background-color: #ffffff;
             padding: 30px;
@@ -38,29 +38,16 @@
             flex-wrap: wrap;
             margin-bottom: 30px;
         }
-        /* Left Column (Exercises) */
+        /* Left Column: Exercises */
         .left-column {
             width: 48%;
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 15px;
         }
-        .exercise-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .column h3 {
-            text-align: center;
-            color: #16a085;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-        /* Token Styles */
-        .draggable-item {
+        .left-column .draggable-item {
             background-color: #3498db;
             color: #fff;
-            margin: 0 auto;
             padding: 20px;
             border: 2px solid #2980b9;
             border-radius: 50%;
@@ -76,18 +63,44 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, background-color 0.2s ease;
         }
-        .draggable-item.dragging {
+        .left-column .draggable-item.dragging {
             opacity: 0.7;
             transform: scale(1.1);
             background-color: #1abc9c;
         }
-        /* Slot Styles */
-        .droppable-item {
-            background-color: #fff;
-            color: #2c3e50;
-            margin: 0 auto;
+        /* Right Column: Health Benefits with Slots */
+        .right-column {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .benefit-pair {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .benefit-token {
+            background-color: #e74c3c;
+            color: #fff;
             padding: 20px;
-            border: 2px dashed #95a5a6;
+            border: 2px solid #c0392b;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            user-select: none;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .droppable-slot {
+            background-color: #bdc3c7;
+            color: #2c3e50;
+            padding: 20px;
+            border: 2px dashed #7f8c8d;
             border-radius: 50%;
             width: 100px;
             height: 100px;
@@ -99,23 +112,20 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: background-color 0.2s ease, border-color 0.2s ease;
         }
-        .droppable-item.correct {
+        .droppable-slot.correct {
             border-color: #27ae60;
             background-color: #2ecc71;
             color: #fff;
         }
-        .droppable-item.incorrect {
+        .droppable-slot.incorrect {
             border-color: #e74c3c;
             background-color: #e74c3c;
             color: #fff;
         }
         /* Dotted Line Connector */
-        .droppable-item::before {
+        .benefit-pair::before {
             content: '';
-            position: absolute;
-            top: 50%;
-            left: -50px; /* Adjust based on layout */
-            width: 40px;
+            flex: 1;
             height: 2px;
             background-image: repeating-linear-gradient(
                 to right,
@@ -164,15 +174,14 @@
             .left-column, .right-column {
                 width: 90%;
             }
-            .draggable-item, .droppable-item {
+            .left-column .draggable-item, .right-column .benefit-token, .right-column .droppable-slot {
                 width: 80px;
                 height: 80px;
                 padding: 15px;
-                font-size: 0.9em;
+                font-size: 0.8em;
             }
-            .droppable-item::before {
-                left: -40px;
-                width: 30px;
+            .benefit-pair::before {
+                display: none;
             }
             #check-answers-button, #reset-button {
                 width: 80%;
@@ -192,22 +201,15 @@
 
     <!-- Game Area -->
     <div id="game-area">
-        <!-- Left Column: Exercises (Two Sub-columns) -->
+        <!-- Left Column: Exercises -->
         <div class="left-column">
-            <div class="exercise-group">
-                <!-- First Column of Tokens -->
-                <!-- Tokens will be dynamically added here -->
-            </div>
-            <div class="exercise-group">
-                <!-- Second Column of Tokens -->
-                <!-- Tokens will be dynamically added here -->
-            </div>
+            <!-- Draggable Exercise Tokens will be added here -->
         </div>
 
         <!-- Right Column: Health Benefits with Slots -->
-        <div class="right-column column">
+        <div class="right-column">
             <h3>Health Benefits</h3>
-            <!-- Benefit slots will be dynamically added here -->
+            <!-- Benefit Pairs will be added here -->
         </div>
     </div>
 
@@ -222,7 +224,7 @@
 <!-- Game Script -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Data for the game
+        // Data for the game: list of exercises and their corresponding health benefits
         const exercises = [
             { name: 'Yoga', benefit: 'Improves Flexibility' },
             { name: 'Running', benefit: 'Enhances Cardiovascular Health' },
@@ -236,7 +238,7 @@
             { name: 'Stretching', benefit: 'Reduces Muscle Tension' }
         ];
 
-        // Shuffle function
+        // Shuffle function to randomize the order of items
         function shuffle(array) {
             let currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -260,15 +262,8 @@
             const resultMessage = document.getElementById('result-message');
 
             // Clear previous content
-            leftColumn.innerHTML = `
-                <div class="exercise-group">
-                    <!-- First Column of Tokens -->
-                </div>
-                <div class="exercise-group">
-                    <!-- Second Column of Tokens -->
-                </div>
-            `;
-            rightColumn.innerHTML = `<h3>Health Benefits</h3>`;
+            leftColumn.innerHTML = '';
+            rightColumn.innerHTML = '<h3>Health Benefits</h3>';
             resultMessage.textContent = '';
             resultMessage.style.color = '#27ae60';
             checkAnswersButton.disabled = false;
@@ -277,13 +272,8 @@
             const shuffledExercises = shuffle([...exercises]);
             const shuffledBenefits = shuffle(exercises.map(ex => ex.benefit));
 
-            // Split shuffledExercises into two groups for two columns
-            const midIndex = Math.ceil(shuffledExercises.length / 2);
-            const firstGroup = shuffledExercises.slice(0, midIndex);
-            const secondGroup = shuffledExercises.slice(midIndex);
-
-            // Function to create draggable items
-            function createDraggableItem(exercise) {
+            // Create draggable exercise tokens
+            shuffledExercises.forEach(exercise => {
                 const exerciseItem = document.createElement('div');
                 exerciseItem.textContent = exercise.name;
                 exerciseItem.className = 'draggable-item';
@@ -300,52 +290,31 @@
                 exerciseItem.addEventListener('touchmove', touchMove, { passive: false });
                 exerciseItem.addEventListener('touchend', touchEnd);
 
-                return exerciseItem;
-            }
-
-            // Add exercises to the left columns
-            const firstGroupContainer = leftColumn.querySelectorAll('.exercise-group')[0];
-            const secondGroupContainer = leftColumn.querySelectorAll('.exercise-group')[1];
-
-            firstGroup.forEach(exercise => {
-                const item = createDraggableItem(exercise);
-                firstGroupContainer.appendChild(item);
+                leftColumn.appendChild(exerciseItem);
             });
 
-            secondGroup.forEach(exercise => {
-                const item = createDraggableItem(exercise);
-                secondGroupContainer.appendChild(item);
-            });
+            // Create benefit pairs
+            shuffledBenefits.forEach(benefit => {
+                const benefitPair = document.createElement('div');
+                benefitPair.className = 'benefit-pair';
 
-            // Function to create droppable slots
-            function createDroppableSlot(benefit) {
-                const benefitSlot = document.createElement('div');
-                benefitSlot.className = 'droppable-item';
-                benefitSlot.dataset.benefit = benefit;
-                benefitSlot.dataset.exercise = ''; // To store the placed exercise
+                const benefitToken = document.createElement('div');
+                benefitToken.className = 'benefit-token';
+                benefitToken.textContent = benefit;
 
-                // Add the benefit label inside the left circle
-                const benefitLabel = document.createElement('span');
-                benefitLabel.textContent = benefit;
-                benefitLabel.style.position = 'absolute';
-                benefitLabel.style.top = '-40px'; // Position above the slot
-                benefitLabel.style.left = '50%';
-                benefitLabel.style.transform = 'translateX(-50%)';
-                benefitLabel.style.fontSize = '0.9em';
-                benefitLabel.style.color = '#2c3e50';
-                benefitSlot.appendChild(benefitLabel);
+                const droppableSlot = document.createElement('div');
+                droppableSlot.className = 'droppable-slot';
+                droppableSlot.dataset.benefit = benefit;
+                droppableSlot.dataset.exercise = ''; // To store the placed exercise
 
                 // Mouse Events
-                benefitSlot.addEventListener('dragover', dragOver);
-                benefitSlot.addEventListener('drop', drop);
+                droppableSlot.addEventListener('dragover', dragOver);
+                droppableSlot.addEventListener('drop', drop);
 
-                return benefitSlot;
-            }
+                benefitPair.appendChild(benefitToken);
+                benefitPair.appendChild(droppableSlot);
 
-            // Add benefits to the right column
-            shuffledBenefits.forEach(benefit => {
-                const slot = createDroppableSlot(benefit);
-                rightColumn.appendChild(slot);
+                rightColumn.appendChild(benefitPair);
             });
         }
 
@@ -374,12 +343,8 @@
 
                 // If the slot already has an exercise, swap them
                 if (existingExercise && existingExercise !== draggedExercise) {
-                    const exercisesColumn = document.querySelector('.left-column');
-                    // Find which exercise group the existing exercise belongs to
-                    const exerciseGroups = exercisesColumn.querySelectorAll('.exercise-group');
-                    exerciseGroups.forEach(group => {
-                        group.appendChild(existingExercise);
-                    });
+                    const leftColumn = document.querySelector('.left-column');
+                    leftColumn.appendChild(existingExercise);
                 }
 
                 // Move the dragged exercise to the benefit slot
@@ -444,17 +409,14 @@
             const touch = event.changedTouches[0];
             const elem = document.elementFromPoint(touch.clientX, touch.clientY);
 
-            if (elem && elem.classList.contains('droppable-item')) {
+            if (elem && elem.classList.contains('droppable-slot')) {
                 const benefitSlot = elem;
                 const existingExercise = benefitSlot.querySelector('.draggable-item');
 
                 // If the slot already has an exercise, swap them
                 if (existingExercise && existingExercise !== touchDragItem) {
-                    const exercisesColumn = document.querySelector('.left-column');
-                    const exerciseGroups = exercisesColumn.querySelectorAll('.exercise-group');
-                    exerciseGroups.forEach(group => {
-                        group.appendChild(existingExercise);
-                    });
+                    const leftColumn = document.querySelector('.left-column');
+                    leftColumn.appendChild(existingExercise);
                 }
 
                 // Move the dragged exercise to the benefit slot
@@ -473,7 +435,7 @@
 
         // Check the user's answers
         function checkAnswers() {
-            const benefitSlots = document.querySelectorAll('.droppable-item');
+            const benefitSlots = document.querySelectorAll('.droppable-slot');
             let correctCount = 0;
             const total = benefitSlots.length;
 
@@ -514,14 +476,12 @@
 
         // Reset the game
         function resetGame() {
-            const benefitSlots = document.querySelectorAll('.droppable-item');
+            const benefitSlots = document.querySelectorAll('.droppable-slot');
             benefitSlots.forEach(slot => {
                 const placedExercise = slot.querySelector('.draggable-item');
                 if (placedExercise) {
-                    const exercisesColumn = document.querySelector('.left-column');
-                    // Append back to the first exercise group
-                    const firstGroup = exercisesColumn.querySelector('.exercise-group');
-                    firstGroup.appendChild(placedExercise);
+                    const leftColumn = document.querySelector('.left-column');
+                    leftColumn.appendChild(placedExercise);
                     slot.dataset.exercise = '';
                     slot.classList.remove('correct', 'incorrect');
                 }
