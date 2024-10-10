@@ -2,636 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Physical Health Matching Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clothing Customizer Demo</title>
     <style>
-        /* Reset Styles */
-        * {
-            box-sizing: border-box;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-
-        /* Global Styles */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+        .container {
+            background-color: #fff;
             padding: 20px;
-        }
-
-        #matching-game-container {
-            max-width: 1200px;
-            margin: auto;
-            background-color: #ffffff;
-            padding: 40px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h2 {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
             text-align: center;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 2em;
         }
-
-        p {
-            text-align: center;
-            color: #34495e;
-            margin-bottom: 30px;
-            font-size: 1.2em;
-        }
-
-        /* Game Area Styles */
-        #game-area {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 40px;
-        }
-
-        /* Left Column: Exercises */
-        .left-column {
-            width: 45%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .left-column h3 {
-            grid-column: span 2;
-            text-align: center;
-            color: #16a085;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-/* Game Area Styles */
-#game-area {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 40px;
-}
-
-/* Left Column: Exercises */
-.left-column {
-    width: 45%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Two columns of exercises */
-    gap: 20px;
-}
-
-.left-column h3 {
-    grid-column: span 2;
-    text-align: center;
-    color: #16a085;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-}
-
-/* Right Column: Health Benefits with Slots */
-.right-column {
-    width: 45%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Two columns of health benefits */
-    gap: 20px;
-}
-
-.right-column h3 {
-    grid-column: span 2;
-    text-align: center;
-    color: #16a085;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-}
-
-/* Draggable and Droppable Items */
-.draggable-item, .benefit-token, .droppable-slot {
-    width: 100%; /* Ensure they take the full column width */
-    height: 50px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: 1em;
-    text-align: center;
-    border-radius: 8px;
-}
-/* Adjust grid layout to ensure it accommodates the tile size */
-.left-column {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-.right-column {
-    gap: 20px; /* Reduce gap if necessary to fit the new tile size */
-}
-
-        .draggable-item {
-            background-color: #3498db;
-            color: #fff;
-            padding: 15px 20px;
-            border: 2px solid #2980b9;
-            border-radius: 8px;
-            cursor: grab;
-            font-size: 1em;
-            text-align: center;
-            user-select: none;
-            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-            aspect-ratio: 6 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .draggable-item.dragging {
-            opacity: 0.7;
-            transform: scale(1.05);
-            background-color: #1abc9c;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Right Column: Health Benefits with Slots */
-        .right-column {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .right-column h3 {
-            text-align: center;
-            color: #16a085;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .benefit-pair {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: relative;
-            padding-left: 30px;
-        }
-
-        .benefit-pair::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            width: 2px;
-            height: 100%;
-            background-image: repeating-linear-gradient(
-                to bottom,
-                #95a5a6,
-                #95a5a6 5px,
-                transparent 5px,
-                transparent 10px
-            );
-        }
-
-        .benefit-token {
-            background-color: #e74c3c;
-            color: #fff;
-            padding: 15px 20px;
-            border: 2px solid #c0392b;
-            border-radius: 8px;
-            cursor: default;
-            font-size: 1em;
-            text-align: center;
-            user-select: none;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            aspect-ratio: 6 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .droppable-slot {
-            background-color: #bdc3c7;
-            color: #2c3e50;
-            padding: 15px 20px;
-            border: 2px dashed #7f8c8d;
-            border-radius: 8px;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1em;
-            user-select: none;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            aspect-ratio: 6 / 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .droppable-slot.correct {
-            border-color: #27ae60;
-            background-color: #2ecc71;
-            color: #fff;
-        }
-
-        .droppable-slot.incorrect {
-            border-color: #e74c3c;
-            background-color: #e74c3c;
-            color: #fff;
-        }
-
-        /* Action Buttons */
-        #check-answers-button, #reset-button {
-            display: inline-block;
-            margin: 0 10px 20px 10px;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            color: #fff;
-            background-color: #2980b9;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #reset-button {
-            background-color: #7f8c8d;
-        }
-
-        #check-answers-button:hover {
-            background-color: #1abc9c;
-        }
-
-        #reset-button:hover {
-            background-color: #95a5a6;
-        }
-
-        /* Result Message */
-        #result-message {
-            text-align: center;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #27ae60;
-            margin-top: 20px;
-        }
-
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            #game-area {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .left-column, .right-column {
-                width: 100%;
-            }
-
-            .left-column {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .draggable-item, .benefit-token, .droppable-slot {
-                padding: 12px 15px;
-                font-size: 0.9em;
-            }
-
-            .benefit-pair::before {
-                left: 10px;
-            }
-
-            #check-answers-button, #reset-button {
-                width: 80%;
-                margin: 10px auto;
-            }
+        select, button {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-
-<div id="matching-game-container">
-    <!-- Game Title -->
-    <h2>Physical Health Matching Game</h2>
-
-    <!-- Instructions -->
-    <p>Match each exercise with its primary health benefit by dragging the exercise tile to the corresponding answer slot below.</p>
-
-    <!-- Game Area -->
-    <div id="game-area">
-        <!-- Left Column: Exercises -->
-        <div class="left-column">
-            <h3>Exercises</h3>
-            <!-- Draggable Exercise Tiles will be added here -->
-        </div>
-
-        <!-- Right Column: Health Benefits with Slots -->
-        <div class="right-column">
-            <h3>Health Benefits</h3>
-            <!-- Health Benefit Pairs will be added here -->
-        </div>
+    <div class="container">
+        <h1>Clothing Customizer</h1>
+        <label for="color">Choose Color:</label>
+        <select id="color">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="black">Black</option>
+        </select>
+        <br>
+        <label for="size">Choose Size:</label>
+        <select id="size">
+            <option value="S">Small</option>
+            <option value="M">Medium</option>
+            <option value="L">Large</option>
+            <option value="XL">Extra Large</option>
+        </select>
+        <br>
+        <button onclick="placeOrder()">Place Order</button>
+        <p id="confirmation" style="color: green;"></p>
     </div>
 
-    <!-- Action Buttons -->
-    <button id="check-answers-button">Check Answers</button>
-    <button id="reset-button">Reset Game</button>
+    <script>
+        function placeOrder() {
+            const color = document.getElementById('color').value;
+            const size = document.getElementById('size').value;
 
-    <!-- Result Message -->
-    <div id="result-message"></div>
-</div>
+            const order = {
+                color: color,
+                size: size
+            };
 
-<!-- Game Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Data for the game: list of exercises and their corresponding health benefits
-        const exercises = [
-            { name: 'Yoga', benefit: 'Improves Flexibility' },
-            { name: 'Running', benefit: 'Enhances Cardiovascular Health' },
-            { name: 'Weight Lifting', benefit: 'Increases Muscle Strength' },
-            { name: 'Swimming', benefit: 'Provides Full-Body Workout' },
-            { name: 'Cycling', benefit: 'Boosts Endurance' },
-            { name: 'Pilates', benefit: 'Strengthens Core Muscles' },
-            { name: 'Tai Chi', benefit: 'Enhances Balance and Coordination' },
-            { name: 'HIIT', benefit: 'Burns Calories Efficiently' },
-            { name: 'Walking', benefit: 'Promotes Joint Health' },
-            { name: 'Stretching', benefit: 'Reduces Muscle Tension' }
-        ];
-
-        // Shuffle function to randomize the order of items
-        function shuffle(array) {
-            let currentIndex = array.length, temporaryValue, randomIndex;
-
-            while (0 !== currentIndex) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex -= 1;
-
-                temporaryValue = array[currentIndex];
-                array[currentIndex] = array[randomIndex];
-                array[randomIndex] = temporaryValue;
-            }
-            return array;
+            console.log('Order details:', order);
+            // Simulate sending order to server
+            setTimeout(() => {
+                document.getElementById('confirmation').innerText = `Order placed for a ${color} shirt in size ${size}!`;
+            }, 500);
         }
-
-        // Initialize the game
-        function initGame() {
-            const leftColumn = document.querySelector('.left-column');
-            const rightColumn = document.querySelector('.right-column');
-            const checkAnswersButton = document.getElementById('check-answers-button');
-            const resetButton = document.getElementById('reset-button');
-            const resultMessage = document.getElementById('result-message');
-
-            // Clear previous content
-            leftColumn.innerHTML = '<h3>Exercises</h3>';
-            rightColumn.innerHTML = '<h3>Health Benefits</h3>';
-            resultMessage.textContent = '';
-            resultMessage.style.color = '#27ae60';
-            checkAnswersButton.disabled = false;
-
-            // Shuffle exercises and benefits
-            const shuffledExercises = shuffle([...exercises]);
-            const shuffledBenefits = shuffle(exercises.map(ex => ex.benefit));
-
-            // Create draggable exercise tiles
-            shuffledExercises.forEach(exercise => {
-                const exerciseTile = document.createElement('div');
-                exerciseTile.className = 'draggable-item';
-                exerciseTile.textContent = exercise.name;
-                exerciseTile.draggable = true;
-                exerciseTile.dataset.exercise = exercise.name;
-                exerciseTile.dataset.benefit = exercise.benefit;
-
-                // Mouse Events
-                exerciseTile.addEventListener('dragstart', dragStart);
-                exerciseTile.addEventListener('dragend', dragEnd);
-
-                // Touch Events
-                exerciseTile.addEventListener('touchstart', touchStart, { passive: false });
-                exerciseTile.addEventListener('touchmove', touchMove, { passive: false });
-                exerciseTile.addEventListener('touchend', touchEnd);
-
-                leftColumn.appendChild(exerciseTile);
-            });
-
-            // Create health benefit pairs with slots
-            shuffledBenefits.forEach(benefit => {
-                const benefitPair = document.createElement('div');
-                benefitPair.className = 'benefit-pair';
-
-                const benefitToken = document.createElement('div');
-                benefitToken.className = 'benefit-token';
-                benefitToken.textContent = benefit;
-
-                const droppableSlot = document.createElement('div');
-                droppableSlot.className = 'droppable-slot';
-                droppableSlot.dataset.benefit = benefit;
-                droppableSlot.dataset.exercise = ''; // To store the placed exercise
-
-                // Mouse Events
-                droppableSlot.addEventListener('dragover', dragOver);
-                droppableSlot.addEventListener('drop', drop);
-
-                benefitPair.appendChild(benefitToken);
-                benefitPair.appendChild(droppableSlot);
-
-                rightColumn.appendChild(benefitPair);
-            });
-        }
-
-        // Drag and Drop Event Handlers for Mouse
-        let draggedExercise = null;
-
-        function dragStart(event) {
-            draggedExercise = this;
-            event.dataTransfer.setData('text/plain', '');
-            setTimeout(() => this.classList.add('dragging'), 0);
-        }
-
-        function dragEnd(event) {
-            this.classList.remove('dragging');
-        }
-
-        function dragOver(event) {
-            event.preventDefault();
-        }
-
-        function drop(event) {
-            event.preventDefault();
-            if (draggedExercise) {
-                const benefitSlot = this;
-                const existingExercise = benefitSlot.querySelector('.draggable-item');
-
-                // If the slot already has an exercise, swap them
-                if (existingExercise && existingExercise !== draggedExercise) {
-                    const leftColumn = document.querySelector('.left-column');
-                    leftColumn.appendChild(existingExercise);
-                }
-
-                // Move the dragged exercise to the benefit slot
-                benefitSlot.appendChild(draggedExercise);
-                benefitSlot.dataset.exercise = draggedExercise.dataset.exercise;
-                draggedExercise = null;
-            }
-        }
-
-        // Touch Event Handlers for Mobile Devices
-        let touchDragItem = null;
-        let touchClone = null;
-        let touchOffsetX = 0;
-        let touchOffsetY = 0;
-
-        function touchStart(event) {
-            event.preventDefault();
-            if (event.touches.length > 1) return; // Only handle single touch
-
-            touchDragItem = this;
-            touchDragItem.classList.add('dragging');
-
-            const touch = event.touches[0];
-            const rect = touchDragItem.getBoundingClientRect();
-
-            touchOffsetX = touch.clientX - rect.left;
-            touchOffsetY = touch.clientY - rect.top;
-
-            // Create a clone of the dragged item
-            touchClone = touchDragItem.cloneNode(true);
-            touchClone.classList.add('clone');
-            touchClone.style.position = 'absolute';
-            touchClone.style.left = `${rect.left}px`;
-            touchClone.style.top = `${rect.top}px`;
-            touchClone.style.width = `${rect.width}px`;
-            touchClone.style.height = `${rect.height}px`;
-            touchClone.style.pointerEvents = 'none';
-            touchClone.style.opacity = '0.7';
-            touchClone.style.border = '2px dashed #95a5a6';
-            touchClone.style.borderRadius = '8px';
-            touchClone.style.backgroundColor = '#3498db';
-            touchClone.style.color = '#fff';
-            touchClone.style.display = 'flex';
-            touchClone.style.alignItems = 'center';
-            touchClone.style.justifyContent = 'center';
-            document.body.appendChild(touchClone);
-        }
-
-        function touchMove(event) {
-            event.preventDefault();
-            if (!touchClone) return;
-
-            const touch = event.touches[0];
-            const newX = touch.clientX - touchOffsetX;
-            const newY = touch.clientY - touchOffsetY;
-
-            touchClone.style.left = `${newX}px`;
-            touchClone.style.top = `${newY}px`;
-        }
-
-        function touchEnd(event) {
-            event.preventDefault();
-            if (!touchDragItem || !touchClone) return;
-
-            touchDragItem.classList.remove('dragging');
-
-            // Get the element under the touch point
-            const touch = event.changedTouches[0];
-            const elem = document.elementFromPoint(touch.clientX, touch.clientY);
-
-            if (elem && elem.classList.contains('droppable-slot')) {
-                const benefitSlot = elem;
-                const existingExercise = benefitSlot.querySelector('.draggable-item');
-
-                // If the slot already has an exercise, swap them
-                if (existingExercise && existingExercise !== touchDragItem) {
-                    const leftColumn = document.querySelector('.left-column');
-                    leftColumn.appendChild(existingExercise);
-                }
-
-                // Move the dragged exercise to the benefit slot
-                benefitSlot.appendChild(touchDragItem);
-                benefitSlot.dataset.exercise = touchDragItem.dataset.exercise;
-            }
-
-            // Remove the clone
-            if (touchClone) {
-                document.body.removeChild(touchClone);
-                touchClone = null;
-            }
-
-            touchDragItem = null;
-        }
-
-        // Check the user's answers
-        function checkAnswers() {
-            const benefitSlots = document.querySelectorAll('.droppable-slot');
-            let correctCount = 0;
-            const total = benefitSlots.length;
-
-            benefitSlots.forEach(slot => {
-                const placedExercise = slot.querySelector('.draggable-item');
-                if (placedExercise) {
-                    const exerciseName = placedExercise.dataset.exercise;
-                    const benefit = slot.dataset.benefit;
-                    const isCorrect = exercises.some(ex => ex.name === exerciseName && ex.benefit === benefit);
-
-                    if (isCorrect) {
-                        slot.classList.add('correct');
-                        correctCount++;
-                    } else {
-                        slot.classList.add('incorrect');
-                    }
-                }
-            });
-
-            const resultMessage = document.getElementById('result-message');
-            if (correctCount === total) {
-                resultMessage.textContent = 'Excellent! You matched all exercises correctly.';
-            } else {
-                resultMessage.textContent = `You matched ${correctCount} out of ${total} correctly.`;
-                resultMessage.style.color = '#e74c3c';
-            }
-
-            // Disable further interaction
-            const draggableItems = document.querySelectorAll('.draggable-item');
-            draggableItems.forEach(item => {
-                item.draggable = false;
-                item.removeEventListener('touchstart', touchStart);
-                item.removeEventListener('touchmove', touchMove);
-                item.removeEventListener('touchend', touchEnd);
-            });
-            document.getElementById('check-answers-button').disabled = true;
-        }
-
-        // Reset the game
-        function resetGame() {
-            const benefitSlots = document.querySelectorAll('.droppable-slot');
-            benefitSlots.forEach(slot => {
-                const placedExercise = slot.querySelector('.draggable-item');
-                if (placedExercise) {
-                    const leftColumn = document.querySelector('.left-column');
-                    leftColumn.appendChild(placedExercise);
-                    slot.dataset.exercise = '';
-                    slot.classList.remove('correct', 'incorrect');
-                }
-            });
-
-            const resultMessage = document.getElementById('result-message');
-            resultMessage.textContent = '';
-            resultMessage.style.color = '#27ae60';
-
-            const checkAnswersButton = document.getElementById('check-answers-button');
-            checkAnswersButton.disabled = false;
-
-            // Re-enable dragging
-            const draggableItems = document.querySelectorAll('.draggable-item');
-            draggableItems.forEach(item => {
-                item.draggable = true;
-                item.addEventListener('touchstart', touchStart, { passive: false });
-                item.addEventListener('touchmove', touchMove, { passive: false });
-                item.addEventListener('touchend', touchEnd);
-            });
-        }
-
-        // Initialize the game on page load
-        initGame();
-
-        // Attach event listeners to buttons
-        document.getElementById('check-answers-button').addEventListener('click', checkAnswers);
-        document.getElementById('reset-button').addEventListener('click', resetGame);
-    });
-</script>
-
+    </script>
 </body>
 </html>
